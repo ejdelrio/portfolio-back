@@ -17,7 +17,7 @@ mailRouter.post('/eddiesportfolioapiwithcrappyauthentication', jsonParser, funct
   debug('MESSAGE STUFF');
   let {sender, body, name, subject, secret} = req.body;
   if(secret !== process.env.APP_SECRET) return next(createError(401, 'Denied'));
-
+  console.log(proce)
 
   let transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -29,8 +29,8 @@ mailRouter.post('/eddiesportfolioapiwithcrappyauthentication', jsonParser, funct
   var mailOptions = {
     from: `${process.env.gmailname}`,
     to: `${process.env.gmailname}`,
-    subject: `${subject}`,
-    text: `FROM: ${name}\n\n EMAIL:${sender}\n\n\n${body}`
+    subject: `PORTFOLIO FOWARD: ${subject}`,
+    text: `FROM: ${name}\n\n EMAIL: ${sender}\n\n\n${body}`
   };
   transporter.sendMail(mailOptions, function(error, info){
     if(error) return next(createError(400, error));
