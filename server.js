@@ -16,7 +16,6 @@ let mailRouter = new express.Router();
 mailRouter.post('/eddiesportfolioapiwithcrappyauthentication', jsonParser, function(req, res, next) {
   debug('MESSAGE STUFF');
   let {sender, body, name, subject, secret} = req.body;
-  console.log(process.env.APP_SECRET, secret)
   if(secret !== process.env.APP_SECRET) return next(createError(401, 'Denied'));
 
 
