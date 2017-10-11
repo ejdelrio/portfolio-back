@@ -3,24 +3,50 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const jsonParser = require('body-parser').json();
+const nodemailer = require('nodemailer');
+const createError = require('http-errors');
 const morgan = require('morgan');
-const mongoose = require('mongoose');
-const debug = require('debug')(`${process.env.APP_NAME}: Server`);
+const debug = require('debug')(`portfolio: Server`);
 
 const PORT = process.env.PORT || 3000;
 const app = express();
 
-const errorMiddleware = require('./lib/error.js');
-const userRouter = require('./router/user-router.js');
-const profileRouter = require('./router/profile-router.js');
+let mailRouter = new express.Router();
+mailRouter.post('/eddiesportfolioapiwithcrappyauthentication', jsonParser, function(req, res, next) {
+  debug('MESSAGE STUFF');
+  let {sender, body, name, subject, secret} = req.body;
+  console.log(process.env.APP_SECRET, secret)
+  if(secret !== process.env.APP_SECRET) return next(createError(401, 'Denied'));
 
-mongoose.connect(process.env.MONGODB_URI);
+
+  let transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: `${process.env.gmailname}`,
+      pass: `${process.env.gmailpass}`
+    }
+  });
+  var mailOptions = {
+    from: `${process.env.gmailname}`,
+    to: `${process.env.gmailname}`,
+    subject: `${subject}`,
+    text: `FROM: ${name}\n\n EMAIL:${sender}\n\n\n${body}`
+  };
+  transporter.sendMail(mailOptions, function(error, info){
+    if(error) return next(createError(400, error));
+    res.json(info);
+    res.end();
+  });
+
+
+
+});
 
 app.use(morgan('dev'));
 app.use(cors());
-app.use(userRouter);
-app.use(profileRouter);
-app.use(errorMiddleware);
+app.use(mailRouter);
+
 
 app.listen(PORT, () => {
   debug(`Server active on port : ${PORT}`);
